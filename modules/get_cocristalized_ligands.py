@@ -2,6 +2,7 @@
 from glob import glob
 from prody import *
 import nglview as nv
+import numpy as np
 
 class PocketResidues:
 
@@ -64,18 +65,16 @@ class PocketResidues:
 		view.add_structure(ligand_nv)
 		return view
 
-	def draw_sphere():
-
 
 
 def get_pocket_ligand(pdb_id,
-                       pocket_residues,
-                       cutoff = 3,
-                       raw_lig_dir = RAW_LIG_DIR,
-                       prot_chain_dir = PROT_CHAINS_DIR,
-                       pk_ligs_dir = PK_LIGS_DIR,
-                       min_weight = 97, # mw de sulfato  + 1
-                       write_files = True):
+                   pocket_residues,
+                   raw_lig_dir,
+                   prot_chain_dir,
+                   pk_ligs_dir,
+                   cutoff = 3,
+                   min_weight = 97, # mw de sulfato  + 1
+                   write_files = True):
     
     # 1) Se carga cargan las moléculas HETATM usando Prody
     try:
