@@ -56,7 +56,9 @@ def plot_points(mds, labels = None,
     ylabel = "Segundo componente",
     legend = False,
     equal_axis = True,
-    xy_lims = None):
+    xy_lims = None,
+    marker='o',
+    edgecolors=None):
     
     '''Genera una gráfica de dispersión en dos dimensiones dado un objeto de cDM.'''
     # Properties of the scatter plot
@@ -82,7 +84,8 @@ def plot_points(mds, labels = None,
         for label in code_labels:
             if label != 'None':
                 indices = np.where(label == labels)
-                plt.scatter( mds[0][indices], mds[1][indices], marker='o', c = code_labels[label],  alpha=alpha, s= point_size)
+                plt.scatter( mds[0][indices], mds[1][indices], marker=marker, c = code_labels[label],  
+                	alpha=alpha, s= point_size, edgecolors = edgecolors)
         
         # plt.scatter( mds[0], mds[1], marker='o', c = color_labels,  alpha=alpha, s=60)
         
@@ -94,7 +97,7 @@ def plot_points(mds, labels = None,
             plt.legend(handles=patchList)
         
     else:
-        plt.scatter( mds[0], mds[1], marker='o', c = colors_list[0], alpha=alpha, s=point_size)
+        plt.scatter( mds[0], mds[1], marker=marker, c = colors_list[0], alpha=alpha, s=point_size, edgecolors = edgecolors)
     '''
     if dic_of_ref_labels is not None  and  traj_labels is not None:
         # Creates the refs label and its color
