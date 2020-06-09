@@ -4,11 +4,11 @@ import numpy as np
 from rdkit import Chem
 import matplotlib.pyplot as plt
 import seaborn as sns
-sns.set(style='white', context='talk')
+sns.set(style='white', context='talk', font_scale=0.8)
 
 
 
-def violin_plot_helper(feature, lig_datasets, xlabel='', ylabel='', title='', 
+def violin_plot_helper(feature, lig_datasets, xlabel='', ylabel='', title='', figsize=(12,4),
                        split_by_activity=False, palette="Spectral", linewidth=1.8, **kwargs):
     df_ = pd.DataFrame()
     # Create the dataset
@@ -28,7 +28,7 @@ def violin_plot_helper(feature, lig_datasets, xlabel='', ylabel='', title='',
                     list(zip([name]*length, a, activity)),
                     columns = ['Database', 'Feature', 'Activity']))
 
-    plt.figure(figsize=(18,6))
+    plt.figure(figsize=figsize)
     if split_by_activity:
         _ = sns.violinplot(x='Database', y='Feature', hue = 'Activity', linewidth=linewidth,
                            data=df_, palette=palette, bw=.15, split=split_by_activity, **kwargs)
@@ -43,7 +43,7 @@ def violin_plot_helper(feature, lig_datasets, xlabel='', ylabel='', title='',
     plt.title(title, weight='bold')
     plt.grid(c='lightgrey')
 
-def swarm_plot_helper(feature, lig_datasets, xlabel='', ylabel='', title='', 
+def swarm_plot_helper(feature, lig_datasets, xlabel='', ylabel='', title='', figsize=(12,4),
                        split_by_activity=False, palette="Spectral", linewidth=1.8, **kwargs):
     df_ = pd.DataFrame()
     # Create the dataset
@@ -63,7 +63,7 @@ def swarm_plot_helper(feature, lig_datasets, xlabel='', ylabel='', title='',
                     list(zip([name]*length, a, activity)),
                     columns = ['Database', 'Feature', 'Activity']))
 
-    plt.figure(figsize=(18,6))
+    plt.figure(figsize=figsize)
     if split_by_activity:
         _ = sns.swarmplot(x='Database', y='Feature', hue = 'Activity',
                            data=df_, palette=palette, **kwargs)
