@@ -110,12 +110,17 @@ from itertools import combinations
 from rdkit.DataStructs import FingerprintSimilarity
 from rdkit import DataStructs
 
-def compare_lig_db(fp, lig_datasets, method = 'tanimoto'):
+def compare_lig_db(fp, lig_datasets, method = 'tanimoto', same = None, same_db = ''):
     '''
         Compares pairwise similarity between molecules from two given sets.
     '''
     matched_ligands = {}
-    for key_i, key_j in combinations(lig_datasets.keys(), 2):
+    if same:
+        combs = (same_db, same_db)
+    else:
+        combs = combinations(lig_datasets.keys(), 2)
+    
+    for key_i, key_j in combs:
         print('\n' + '='*20)
         print(key_i, '\t', key_j)
         print('='*20)
