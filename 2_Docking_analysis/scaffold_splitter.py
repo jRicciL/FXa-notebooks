@@ -50,6 +50,10 @@ def scaffold_splitter(scaffold_series, test_size=0.2, stratify=None):
     train_size = 1 - test_size
     scaffolds = {}
     train_inds, valid_inds, test_inds = [], [], []
+    data_len = len(scaffold_series)
+    
+    # create Train and Test sets
+    train_cutoff = train_size * data_len
     
     if isinstance(stratify, pd.Series): 
         # Use stratify (y) to get active indices
@@ -62,8 +66,10 @@ def scaffold_splitter(scaffold_series, test_size=0.2, stratify=None):
                                               test_size=test_size, stratify=None)
         # Start filling train_inds, valid_inds, test_inds with active indices
         train_inds, valid_inds, test_inds = act_train_inds, act_valid_inds, act_test_inds
+        
+        # As actives have been dispached, we should subtract its length from the data_len
+#     train_cutoff = train_cutoff# + len(train_inds)
     
-    data_len = len(scaffold_series)
     
     for ind, scff in scaffold_series.items():
         if scff not in scaffolds:
@@ -78,9 +84,6 @@ def scaffold_splitter(scaffold_series, test_size=0.2, stratify=None):
         for (scff, scff_set) in sorted(
             scaffolds.items(), key=lambda x: (len(x[1]), x[1][0]), reverse=True)
     ]
-    
-    # create Train and Test sets
-    train_cutoff = int(train_size * data_len)
     
     # Full Train-Test sets
     for scff_set in scaffold_sets:
