@@ -42,7 +42,8 @@ class PlotMetric:
                                   'auac': self._get_ac_auc,
                                   'pr_auc': self._get_pr_auc,
                                   'ref_auc': self._get_ref_auc,
-                                  'ef': self.get_efs,
+                                  'nef_auc': self._get_nef_auc,
+                                  'ef': self._get_ef_value,
                                   'rie': self._rie_score,
                                   'bedroc': self._bedroc_score}
         pylab.rcParams['figure.figsize'] = figsize
@@ -131,7 +132,7 @@ class PlotMetric:
         return pr_auc
 
     # Enrichment Factor
-    def _get_ef(self, y_pred, fractions, method):
+    def _get_ef(self, y_pred, fractions, method='normalized'):
         N = self.N
         n = self.n
         order = np.argsort(- y_pred)
@@ -160,7 +161,7 @@ class PlotMetric:
                     ef_i = (100 * n_s) / min(N_s, n)
                 elif method == 'absolute':
                     ef_i = (N * n_s) / (n * N_s)
-                elif method == 'normalized':
+                else:
                     ef_i = n_s / min(N_s, n)
                 efs.append(ef_i)
                 N_s_floor.pop(0)
@@ -186,7 +187,17 @@ class PlotMetric:
         df_efs = df_efs.round(rounded)
         return df_efs.T
 
-    def _get_ref_auc(self, y_pred, method = 'normalized', max_chi = 1):
+    def _get_ef_value(self, y_pred, fraction, method='absolute'):
+        ef_value = self._get_ef(y_pred = y_pred, method = method, fractions = [fraction])
+        return ef_value
+
+    def _get_ref_auc(self, y_pred, method = 'relative', max_chi = 1):
+        fractions = np.linspace(0.0, max_chi, len(self.y_true) - 2 )
+        efs = self._get_ef(y_pred = y_pred, method = method, fractions = fractions)
+        efs_auc = auc(fractions, efs)
+        return efs_auc
+
+    def _get_nef_auc(self, y_pred, method = 'normalized', max_chi = 1):
         fractions = np.linspace(0.0, max_chi, len(self.y_true) - 2 )
         efs = self._get_ef(y_pred = y_pred, method = method, fractions = fractions)
         efs_auc = auc(fractions, efs)
@@ -284,7 +295,7 @@ class PlotMetric:
             if key in keys_to_omit:
                 continue
             if key_to_fade == key:
-                self._add_plot_ef(y_pred, method = method, label = key, 
+                self._add_plot_ef(y_pred, method = method, label = str(key), 
                         max_chi = max_chi, max_num_of_ligands = max_num_of_ligands,
                         linestyle = '--', 
                         linewidth = 1.5, **kwargs)
@@ -292,10 +303,10 @@ class PlotMetric:
             if type(key_to_plot) is str and key_to_plot in self.y_pred_dict.keys():
                 key = key_to_plot
                 y_pred = self.y_pred_dict[key]
-                self._add_plot_ef(y_pred, method = method, label = key, 
+                self._add_plot_ef(y_pred, method = method, label = str(key), 
                                     max_chi = max_chi, max_num_of_ligands = max_num_of_ligands, **kwargs)
                 break
-            self._add_plot_ef(y_pred, method = method, label = key, 
+            self._add_plot_ef(y_pred, method = method, label = str(key), 
                                     max_chi = max_chi, max_num_of_ligands = max_num_of_ligands, **kwargs)
         if showplot:
             plt.legend(fontsize=fontsize)
@@ -327,15 +338,15 @@ class PlotMetric:
             if key in keys_to_omit:
                 continue
             if key_to_fade == key:
-                self._add_plot_pr(y_pred, label = key, linestyle = '--', 
+                self._add_plot_pr(y_pred, label = str(key), linestyle = '--', 
                         linewidth = 1.5, **kwargs)
                 continue
             if type(key_to_plot) is str and key_to_plot in self.y_pred_dict.keys():
                 key = key_to_plot
                 y_pred = self.y_pred_dict[key]
-                self._add_plot_pr(y_pred, label = key, **kwargs)
+                self._add_plot_pr(y_pred, label = str(key), **kwargs)
                 break
-            self._add_plot_pr(y_pred, label = key, **kwargs)
+            self._add_plot_pr(y_pred, label = str(key), **kwargs)
         if showplot:
             plt.legend(fontsize=fontsize)
             no_skill = self.R_a
@@ -362,15 +373,15 @@ class PlotMetric:
             if key in keys_to_omit:
                 continue
             if key_to_fade == key:
-                self._add_plot_pRoc(y_pred, label = key, linestyle = '--', 
+                self._add_plot_pRoc(y_pred, label = str(key), linestyle = '--', 
                         linewidth = 1.5, **kwargs)
                 continue
             if type(key_to_plot) is str and key_to_plot in self.y_pred_dict.keys():
                 key = key_to_plot
                 y_pred = self.y_pred_dict[key]
-                self._add_plot_pRoc(y_pred, label = key, **kwargs)
+                self._add_plot_pRoc(y_pred, label = str(key), **kwargs)
                 break
-            self._add_plot_pRoc(y_pred, label = key, **kwargs)
+            self._add_plot_pRoc(y_pred, label = str(key), **kwargs)
         if showplot:
             plt.legend(fontsize=fontsize)
             #plt.plot([0, 1], [0, 1], 'k--', c = 'gray')
@@ -392,14 +403,14 @@ class PlotMetric:
             if key in keys_to_omit:
                 continue
             if key_to_fade == key:
-                self._add_plot_bedroc(label = key, alphas = alphas, linestyle = '--', marker = 'o',
+                self._add_plot_bedroc(label = str(key), alphas = alphas, linestyle = '--', marker = 'o',
                 bedrocs = df_bedroc[key].values, **kwargs)
                 continue
             if type(key_to_plot) is str and key_to_plot in self.y_pred_dict.keys():
                 key = key_to_plot
-                self._add_plot_bedroc(label = key, alphas = alphas, bedrocs = df_bedroc[key].values, marker = 'v', **kwargs)
+                self._add_plot_bedroc(label = str(key), alphas = alphas, bedrocs = df_bedroc[key].values, marker = 'v', **kwargs)
                 break
-            self._add_plot_bedroc(label = key, alphas = alphas, bedrocs = df_bedroc[key].values, marker = 'v', **kwargs)
+            self._add_plot_bedroc(label = str(key), alphas = alphas, bedrocs = df_bedroc[key].values, marker = 'v', **kwargs)
         if showplot:
             plt.legend(fontsize=fontsize)
             plt.xlabel("Alpha values")
@@ -424,15 +435,15 @@ class PlotMetric:
             if key in keys_to_omit:
                 continue
             if key_to_fade == key:
-                self._add_plot_roc(y_pred, label = key, linestyle = '--', 
+                self._add_plot_roc(y_pred, label = str(key), linestyle = '--', 
                         linewidth = 1.5, **kwargs)
                 continue
             if type(key_to_plot) is str and key_to_plot in self.y_pred_dict.keys():
                 key = key_to_plot
                 y_pred = self.y_pred_dict[key]
-                self._add_plot_roc(y_pred, label = key, **kwargs)
+                self._add_plot_roc(y_pred, label = str(key), **kwargs)
                 break
-            self._add_plot_roc(y_pred, label = key, **kwargs)
+            self._add_plot_roc(y_pred, label = str(key), **kwargs)
         if showplot:
             plt.legend(fontsize=fontsize)
             plt.plot([0, 1], [0, 1], 'k--', c = 'gray')
@@ -456,15 +467,15 @@ class PlotMetric:
             if key in keys_to_omit:
                 continue
             if key_to_fade == key:
-                self._add_plot_ac(y_pred, label = key, normalized = normalized,
+                self._add_plot_ac(y_pred, label = str(key), normalized = normalized,
                 linestyle = '--', linewidth = 1.5, **kwargs)
                 continue
             if type(key_to_plot) is str and key_to_plot in self.y_pred_dict.keys():
                 key = key_to_plot
                 y_pred = self.y_pred_dict[key]
-                self._add_plot_ac(y_pred, label = key, normalized = normalized, **kwargs)
+                self._add_plot_ac(y_pred, label = str(key), normalized = normalized, **kwargs)
                 break
-            self._add_plot_ac(y_pred, label = key, normalized = normalized, **kwargs)
+            self._add_plot_ac(y_pred, label = str(key), normalized = normalized, **kwargs)
         if showplot:
             plt.legend(fontsize=fontsize)
             if normalized:
@@ -482,9 +493,18 @@ class PlotMetric:
                 plt.show()
         
     # Plotting distributions
-    def plot_actives_distribution(self, colors = {1: '#e74c3c', 0: '#FCD988'}, 
+    def plot_actives_distribution(self, colors = {1: '#e74c3c', 0: '#FCD988'}, only_keys=None,
     max_position_to_plot = 200, add_to_title = '', show_num_actives = False):
-        for key, y_pred in self.y_pred_dict.items():
+        y_pred_dict = self.y_pred_dict
+
+        # If only a subset of keys is requested
+        if type(only_keys) is list and len(only_keys) > 0:
+            keys_exist = np.all([ i in y_pred_dict.keys() for i in only_keys])
+            assert keys_exist, 'Requested keys were not found.'
+            y_pred_dict = {key: y_pred_dict[key] for key in only_keys}
+
+
+        for key, y_pred in y_pred_dict.items():
             order = np.argsort(-y_pred)
             y_pred_ord = y_pred[order]
             y_true = self.y_true[order]
@@ -501,14 +521,24 @@ class PlotMetric:
             plt.show()
 
     # Formating metrics
-    def format_metric_results(self, metric_name='roc_auc', 
+    def format_metric_results(self, metric_name='roc_auc', only_keys=None,
                               rounded = 3, transposed = True, as_dataframe = True, **kwargs):
         if metric_name not in self.available_metrics:
             raise ValueError(F'Metric {metric_name} is not available. ' + 
                   F'Available metrics are:\n{self.available_metrics.keys()}')
         metric = self.available_metrics[metric_name]
         dic_results = {}
-        for key, y_pred in self.y_pred_dict.items():
+
+        y_pred_dict = self.y_pred_dict
+
+        # If only a subset of keys is requested
+        if type(only_keys) is list and len(only_keys) > 0:
+            keys_exist = np.all([ i in y_pred_dict.keys() for i in only_keys])
+            assert keys_exist, 'Requested keys were not found.'
+            y_pred_dict = {key: y_pred_dict[key] for key in only_keys}
+
+
+        for key, y_pred in y_pred_dict.items():
             dic_results[key] = metric(y_pred, **kwargs)
         if as_dataframe:
             df = pd.DataFrame(dic_results, index = [metric_name.upper().replace('_', ' ')])
