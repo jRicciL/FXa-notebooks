@@ -9,7 +9,7 @@ def find_gaps(seq, r=1): # r es el número de residuos móviles al lado de la ve
     # Obtener el índice de inicio y final del gap
     for i , gap in enumerate(gaps, 1):
         start = gap.start() + 1 # Sumamos uno pues la secuecnia está indexada a partir de 1
-        end = gap.end() + 1 # sumamos 1
+        end = gap.end() # sumamos 1
         gap_lengths.append(end - start + 1)
         gap_list.append([start, end])
         # end_right y start right evitan que la ventana sobrepase la secuencia de
